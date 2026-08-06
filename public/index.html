@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UPI Fraud Sentinel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Sora:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0c10;
+      --surface: #111419;
+      --surface2: #181c23;
+      --border: #1e2530;
+      --accent: #00d4aa;
+      --accent2: #0096ff;
+      --danger: #ff4b4b;
+      --warn: #ffab00;
+      --ok: #00d4aa;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Sora', sans-serif;
+    }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 13px;
+    }
+
+    #app { padding: 16px; max-width: 1400px; margin: 0 auto; }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo-dot {
+      width: 10px; height: 10px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .header h1 {
+      font-family: var(--mono);
+      font-size: 14px; font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 2px; text-transform: uppercase;
+    }
+    .header .sub { font-size: 11px; color: var(--muted); margin-left: auto; font-family: var(--mono); }
+
+    /* ── Stats ── */
+    .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 12px; }
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px; padding: 10px; text-align: center;
+    }
+    .stat .val { font-family: var(--mono); font-size: 20px; font-weight: 700; line-height: 1; }
+    .stat .lbl { font-size: 10px; color: var(--muted); margin-top: 3px; letter-spacing: 0.5px; }
+    .stat.danger .val { color: var(--danger); }
+    .stat.warn .val { color: var(--warn); }
+    .stat.ok .val { color: var(--ok); }
+    .stat.info .val { color: var(--accent2); }
+
+    /* ── Layout ── */
+    .grid { display: grid; grid-template-columns: 320px 1fr; gap: 12px; }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px;
+    }
+    .panel-title {
+      font-family: var(--mono);
+      font-size: 10px; font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 1.5px; text-transform: uppercase;
+      margin-bottom: 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .panel-title::before {
+      content: ''; width: 3px; height: 10px;
+      background: var(--accent); border-radius: 2px; display: inline-block;
+    }
+
+    /* ── Form ── */
+    label {
+      font-size: 11px; color: var(--muted);
+      display: block; margin-bottom: 4px;
+      font-family: var(--mono); letter-spacing: 0.5px;
+    }
+    input, select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--text);
+      font-family: var(--mono); font-size: 12px;
+      padding: 7px 10px; margin-bottom: 10px;
+      outline: none; transition: border-color 0.2s;
+    }
+    input:focus, select:focus { border-color: var(--accent); }
+    input::placeholder { color: var(--muted); opacity: 0.5; }
+
+    .btn {
+      width: 100%; padding: 10px;
+      background: var(--accent); color: #000;
+      border: none; border-radius: 5px;
+      font-family: var(--mono); font-size: 12px; font-weight: 700;
+      cursor: pointer; letter-spacing: 1px; text-transform: uppercase;
+      transition: opacity 0.2s; margin-top: 4px;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn.sec {
+      background: transparent; color: var(--accent);
+      border: 1px solid var(--accent); font-size: 11px;
+      padding: 7px; margin-top: 8px;
+    }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 11px; }
+    th {
+      color: var(--muted); font-weight: 500;
+      padding: 6px 8px; text-align: left;
+      border-bottom: 1px solid var(--border);
+      letter-spacing: 0.5px; white-space: nowrap;
+    }
+    td { padding: 7px 8px; border-bottom: 1px solid #161920; white-space: nowrap; }
+    tr.flagged { background: rgba(255,75,75,0.05); }
+    tr.flagged:hover { background: rgba(255,75,75,0.1); }
+    tr:not(.flagged):hover { background: rgba(255,255,255,0.02); }
+
+    .badge {
+      display: inline-block; padding: 2px 7px;
+      border-radius: 3px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+    }
+    .badge.high { background: rgba(255,75,75,0.15); color: var(--danger); }
+    .badge.medium { background: rgba(255,171,0,0.15); color: var(--warn); }
+    .badge.low { background: rgba(0,212,170,0.15); color: var(--ok); }
+
+    .score-bar {
+      width: 60px; height: 4px; background: var(--border);
+      border-radius: 2px; overflow: hidden;
+      display: inline-block; vertical-align: middle; margin-right: 5px;
+    }
+    .score-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+    .reasons { font-size: 10px; color: var(--warn); max-width: 200px; white-space: normal; line-height: 1.5; }
+
+    /* ── Profile ── */
+    .profile-info { display: flex; flex-direction: column; gap: 6px; }
+    .profile-row {
+      display: flex; justify-content: space-between;
+      font-size: 12px; padding: 5px 0; border-bottom: 1px solid var(--border);
+    }
+    .profile-row .key { color: var(--muted); font-size: 11px; }
+    .profile-row .val { font-family: var(--mono); }
+    .risk-indicator { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+    .risk-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .risk-label { font-size: 13px; font-weight: 600; font-family: var(--mono); }
+
+    .mini-tx {
+      font-size: 11px; padding: 5px 0; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; font-family: var(--mono);
+    }
+    .mini-tx .amt { color: var(--warn); }
+    .mini-tx .time { color: var(--muted); font-size: 10px; }
+
+    /* ── Misc ── */
+    .filter-btn {
+      padding: 4px 12px; border-radius: 4px;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--muted); font-size: 11px; font-family: var(--mono); cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,212,170,0.08); }
+    .btn-export {
+      background: transparent; color: var(--muted);
+      border: 1px solid var(--border); border-radius: 5px;
+      font-family: var(--mono); font-size: 11px; padding: 5px 12px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-export:hover { color: var(--accent); border-color: var(--accent); }
+    .no-data { color: var(--muted); font-size: 11px; text-align: center; padding: 20px 0; }
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-family: var(--mono); font-size: 12px; }
+    .right-col { display: flex; flex-direction: column; gap: 12px; }
+
+    @keyframes flashrow { 0%{background:rgba(0,212,170,0.2)} 100%{background:transparent} }
+    .flash { animation: flashrow 1s ease-out; }
+
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--surface); border: 1px solid var(--accent);
+      color: var(--accent); font-family: var(--mono); font-size: 12px;
+      padding: 10px 16px; border-radius: 6px;
+      opacity: 0; transition: opacity 0.3s;
+      pointer-events: none; z-index: 999;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div class="logo-dot"></div>
+    <h1>UPI Fraud Detector</h1>
+    <span class="sub" id="live-clock"></span>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat info"><div class="val" id="stat-total">0</div><div class="lbl">TOTAL TXN</div></div>
+    <div class="stat danger"><div class="val" id="stat-flagged">0</div><div class="lbl">HIGH RISK</div></div>
+    <div class="stat warn"><div class="val" id="stat-medium">0</div><div class="lbl">MEDIUM RISK</div></div>
+    <div class="stat ok"><div class="val" id="stat-safe">0</div><div class="lbl">SAFE</div></div>
+  </div>
+
+  <div class="grid">
+    <!-- LEFT COLUMN -->
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="panel">
+        <div class="panel-title">Simulate Transaction</div>
+        <label>Payer ID</label>
+        <input id="payer_id" placeholder="e.g. user_001" value="user_001">
+        <label>Payee / Merchant ID</label>
+        <input id="payee_id" placeholder="e.g. merchant_42" value="merchant_99">
+        <label>Amount (₹)</label>
+        <input id="amount" type="number" placeholder="e.g. 5000" value="5000" min="1">
+        <label>Location</label>
+        <input id="location" placeholder="e.g. Mumbai" value="Mumbai">
+        <label>Device ID</label>
+        <input id="device_id" placeholder="e.g. dev_abc123" value="dev_abc123">
+        <label>Hour Override (0–23, blank = now)</label>
+        <input id="hour_override" placeholder="e.g. 3 for 3 AM" type="number" min="0" max="23">
+        <button class="btn" onclick="submitTransaction()">→ Submit Transaction</button>
+        <button class="btn sec" onclick="runBurst()">⚡ Simulate Burst (15 txn)</button>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">User Risk Profile</div>
+        <label>Inspect User ID</label>
+        <input id="profile_user" placeholder="e.g. user_001" value="user_001" oninput="loadProfile()">
+        <div id="profile-body"><div class="no-data">Enter a User ID above</div></div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="right-col">
+      <div class="panel" style="flex:1;">
+        <div class="panel-title" style="justify-content:space-between;flex-wrap:wrap;gap:8px;">
+          <span>Transaction Monitor</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="filter-btn active" id="f-all" onclick="setFilter('all')">ALL</button>
+            <button class="filter-btn" id="f-flagged" onclick="setFilter('flagged')">FLAGGED</button>
+            <button class="btn-export" onclick="exportCSV()">↧ Export CSV</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Time</th><th>Payer</th><th>Payee</th>
+                <th>Amount</th><th>Score</th><th>Risk</th><th>Reason Codes</th>
+              </tr>
+            </thead>
+            <tbody id="txn-table">
+              <tr><td colspan="8"><div class="empty-state">No transactions yet.<br>Submit one to begin.</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = '';   // same origin
+  let currentFilter = 'all';
+  let allTransactions = [];
+
+  // ── Clock ──────────────────────────────────────────────────────────────────
+  function updateClock() {
+    document.getElementById('live-clock').textContent = new Date().toLocaleTimeString();
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // ── Toast ──────────────────────────────────────────────────────────────────
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2500);
+  }
+
+  // ── Submit ─────────────────────────────────────────────────────────────────
+  async function submitTransaction() {
+    const body = {
+      payer_id: document.getElementById('payer_id').value.trim() || 'user_001',
+      payee_id: document.getElementById('payee_id').value.trim() || 'merchant_01',
+      amount: parseFloat(document.getElementById('amount').value) || 100,
+      location: document.getElementById('location').value.trim() || 'Unknown',
+      device_id: document.getElementById('device_id').value.trim() || 'dev_default',
+    };
+    const h = document.getElementById('hour_override').value;
+    if (h !== '') body.hour_override = parseInt(h);
+
+    const res = await fetch(`${API}/api/transaction`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const txn = await res.json();
+    allTransactions.unshift(txn);
+    renderTable();
+    renderStats();
+    loadProfile();
+    flashFirst();
+    showToast(`TXN #${txn.id} submitted — Risk: ${txn.risk.toUpperCase()} (${txn.score})`);
+  }
+
+  // ── Burst ──────────────────────────────────────────────────────────────────
+  async function runBurst() {
+    const res = await fetch(`${API}/api/burst`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ payer_id: document.getElementById('payer_id').value.trim() || 'user_001', device_id: document.getElementById('device_id').value.trim() })
+    });
+    const txns = await res.json();
+    allTransactions = [...txns, ...allTransactions];
+    renderTable();
+    renderStats();
+    loadProfile();
+    showToast(`Burst: ${txns.length} transactions submitted`);
+  }
+
+  // ── Filter ─────────────────────────────────────────────────────────────────
+  function setFilter(f) {
+    currentFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(`f-${f}`).classList.add('active');
+    renderTable();
+  }
+
+  // ── Render Table ───────────────────────────────────────────────────────────
+  function renderTable() {
+    const tbody = document.getElementById('txn-table');
+    let txns = allTransactions;
+    if (currentFilter === 'flagged') txns = txns.filter(t => t.risk !== 'low');
+
+    if (!txns.length) {
+      tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state">No transactions match.</div></td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = txns.slice(0, 100).map((t, i) => {
+      const color = t.score >= 60 ? '#ff4b4b' : t.score >= 30 ? '#ffab00' : '#00d4aa';
+      const time = new Date(t.timestamp).toLocaleTimeString();
+      const amt = '₹' + t.amount.toLocaleString('en-IN');
+      const reasons = t.reasons.length ? t.reasons.join(', ') : '—';
+      return `<tr class="${t.risk !== 'low' ? 'flagged' : ''}" id="row-${i}">
+        <td style="color:var(--muted)">${t.id}</td>
+        <td style="color:var(--muted)">${time}</td>
+        <td>${t.payer_id}</td>
+        <td>${t.payee_id}</td>
+        <td style="color:${t.amount > 10000 ? 'var(--warn)' : 'var(--text)'}; font-weight:500">${amt}</td>
+        <td>
+          <span class="score-bar"><span class="score-fill" style="width:${t.score}%;background:${color}"></span></span>
+          <span style="color:${color};font-weight:700">${t.score}</span>
+        </td>
+        <td><span class="badge ${t.risk}">${t.risk.toUpperCase()}</span></td>
+        <td><div class="reasons">${reasons}</div></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Render Stats ───────────────────────────────────────────────────────────
+  function renderStats() {
+    const all = allTransactions;
+    document.getElementById('stat-total').textContent = all.length;
+    document.getElementById('stat-flagged').textContent = all.filter(t => t.risk === 'high').length;
+    document.getElementById('stat-medium').textContent = all.filter(t => t.risk === 'medium').length;
+    document.getElementById('stat-safe').textContent = all.filter(t => t.risk === 'low').length;
+  }
+
+  // ── User Profile ───────────────────────────────────────────────────────────
+  async function loadProfile() {
+    const uid = document.getElementById('profile_user').value.trim();
+    const el = document.getElementById('profile-body');
+    if (!uid) { el.innerHTML = '<div class="no-data">Enter a User ID above</div>'; return; }
+
+    const res = await fetch(`${API}/api/profile/${encodeURIComponent(uid)}`);
+    const data = await res.json();
+
+    if (!data.found) {
+      el.innerHTML = '<div class="no-data">No data for this user yet.</div>';
+      return;
+    }
+
+    const riskColor = data.riskLevel === 'HIGH' ? '#ff4b4b' : data.riskLevel === 'MEDIUM' ? '#ffab00' : '#00d4aa';
+
+    el.innerHTML = `
+      <div class="profile-info">
+        <div class="profile-row"><span class="key">Total Transactions</span><span class="val">${data.total}</span></div>
+        <div class="profile-row"><span class="key">High Risk TXNs</span><span class="val" style="color:var(--danger)">${data.highCount}</span></div>
+        <div class="profile-row"><span class="key">Avg Risk Score</span><span class="val">${data.avgScore}</span></div>
+        <div class="profile-row"><span class="key">Last Device</span><span class="val" style="font-size:10px">${data.lastDevice || '—'}</span></div>
+        <div class="risk-indicator">
+          <div class="risk-dot" style="background:${riskColor};box-shadow:0 0 6px ${riskColor}"></div>
+          <span class="risk-label" style="color:${riskColor}">${data.riskLevel} RISK</span>
+        </div>
+      </div>
+      <div style="margin-top:10px;">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:8px;font-family:var(--mono)">LAST 5 TRANSACTIONS</div>
+        ${data.last5.map(t => `
+          <div class="mini-tx">
+            <div>
+              <div>${t.payee_id}</div>
+              <div class="time">${new Date(t.timestamp).toLocaleTimeString()}</div>
+            </div>
+            <div style="text-align:right">
+              <div class="amt">₹${t.amount.toLocaleString('en-IN')}</div>
+              <span class="badge ${t.risk}" style="font-size:9px">${t.risk.toUpperCase()}</span>
+            </div>
+          </div>`).join('')}
+      </div>`;
+  }
+
+  // ── Export ─────────────────────────────────────────────────────────────────
+  function exportCSV() {
+    window.open(`${API}/api/export`, '_blank');
+  }
+
+  // ── Flash first row ────────────────────────────────────────────────────────
+  function flashFirst() {
+    setTimeout(() => {
+      const first = document.querySelector('#txn-table tr');
+      if (first) { first.classList.add('flash'); setTimeout(() => first.classList.remove('flash'), 1000); }
+    }, 50);
+  }
+</script>
+</body>
+</html>
