@@ -1,28 +1,28 @@
 # UPI Risk Assessment System
 
-A rule-based UPI transaction risk assessment system that analyzes transactions in real time and assigns a risk score based on suspicious activity patterns. Developed during the **Fiserv Hackathon** using **Node.js** and **Express.js**.
+A rule-based UPI transaction risk assessment system that analyzes transactions in real time and assigns a risk score based on suspicious activity patterns. Developed using **Node.js**, **Express.js**, and **JavaScript** during the **Fiserv Hackathon**.
 
 ---
 
 ## Overview
 
-The system evaluates every UPI transaction against predefined fraud detection rules and classifies it as **Low**, **Medium**, or **High Risk**. It demonstrates how financial institutions can perform instant transaction risk analysis before processing payments.
+The application evaluates UPI transactions using predefined risk assessment rules and classifies each transaction as **Low**, **Medium**, or **High Risk**. It also provides transaction monitoring, user risk profiling, and suspicious transaction export.
 
 ---
 
 ## Features
 
-- Real-time transaction risk assessment
+- Real-time UPI transaction risk assessment
 - Rule-based fraud detection engine
 - Dynamic risk score calculation
-- Low / Medium / High risk classification
+- Low, Medium, and High risk classification
+- High-value transaction detection
+- High transaction velocity detection
 - New beneficiary detection
 - Device change detection
-- High-value transaction detection
-- Night-time transaction monitoring
-- High transaction velocity detection
-- User transaction profiling
-- Transaction history dashboard
+- Unusual transaction timing detection
+- User risk profile dashboard
+- Transaction monitoring dashboard
 - CSV export for suspicious transactions
 
 ---
@@ -43,92 +43,15 @@ The system evaluates every UPI transaction against predefined fraud detection ru
 ## Project Structure
 
 ```
-upi-risk-assessment-system
-│
+upi-risk-assessment-system/
 ├── public/
 │   └── index.html
-│
 ├── server.js
 ├── ruleEngine.js
 ├── package.json
 ├── package-lock.json
-└── README.md
-```
-
----
-
-## Fraud Detection Rules
-
-The risk engine evaluates transactions using multiple rules including:
-
-- High-value transactions
-- Multiple transactions within a short time
-- New beneficiary detection
-- Device change detection
-- Unusual transaction timing (12 AM – 5 AM)
-- Large transaction amount
-
-Each triggered rule contributes to the overall risk score.
-
----
-
-## Risk Levels
-
-| Score | Risk Level |
-|-------:|------------|
-| 0 – 29 | Low |
-| 30 – 59 | Medium |
-| 60 – 100 | High |
-
----
-
-## System Workflow
-
-```
-User Transaction
-        │
-        ▼
-Express Server
-        │
-        ▼
-Rule Engine
-        │
-        ▼
-Risk Score Calculation
-        │
-        ▼
-Low / Medium / High
-        │
-        ▼
-Dashboard & Transaction History
-```
-
----
-
-## API Endpoints
-
-### Analyze Transaction
-
-```
-POST /api/transaction
-```
-
-### Get User Profile
-
-```
-GET /api/profile/:userId
-```
-
-### Generate Sample Transactions
-
-```
-POST /api/burst
-```
-
-### Export Suspicious Transactions
-
-```
-GET /api/export
+├── README.md
+└── .gitignore
 ```
 
 ---
@@ -141,7 +64,7 @@ Clone the repository
 git clone https://github.com/OnkarShesh/upi-risk-assessment-system.git
 ```
 
-Go to the project directory
+Navigate to the project directory
 
 ```bash
 cd upi-risk-assessment-system
@@ -153,13 +76,13 @@ Install dependencies
 npm install
 ```
 
-Start the server
+Start the application
 
 ```bash
 npm start
 ```
 
-Open
+Open your browser
 
 ```
 http://localhost:3000
@@ -167,21 +90,102 @@ http://localhost:3000
 
 ---
 
+## API Endpoints
+
+| Method | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/api/transaction` | Analyze a transaction |
+| GET | `/api/transactions` | Retrieve all transactions |
+| GET | `/api/transactions?filter=flagged` | Retrieve flagged transactions |
+| GET | `/api/profile/:userId` | Get user risk profile |
+| POST | `/api/burst` | Generate sample transactions |
+| GET | `/api/export` | Export suspicious transactions as CSV |
+
+---
+
+## Sample Request
+
+```json
+{
+  "payer_id": "user_001",
+  "payee_id": "merchant_42",
+  "amount": 15000,
+  "location": "Mumbai",
+  "device_id": "dev_abc123",
+  "hour_override": 3
+}
+```
+
+---
+
+## Risk Assessment Rules
+
+The transaction risk score is calculated using multiple rule-based checks, including:
+
+- High-value transactions within a short time window
+- New beneficiary with a high transaction amount
+- High transaction velocity
+- Transactions during unusual hours (12 AM – 5 AM)
+- Device change combined with a new beneficiary
+- Large transaction amount
+
+Each triggered rule contributes to the overall risk score.
+
+---
+
+## Risk Classification
+
+| Score | Risk Level |
+|-------:|------------|
+| 0 – 29 | Low |
+| 30 – 59 | Medium |
+| 60 – 100 | High |
+
+---
+
+## Testing Scenarios
+
+The system can be tested using scenarios such as:
+
+- High-value transactions
+- Multiple rapid transactions
+- New beneficiary payments
+- Device change
+- Transactions during unusual hours
+- Burst transaction simulation
+
+---
+
+## Screenshots
+
+### Dashboard
+
+> Add `screenshots/dashboard.png`
+
+### User Risk Profile
+
+> Add `screenshots/user-risk-profile.png`
+
+### CSV Export
+
+> Add `screenshots/csv-export.png`
+
+---
+
 ## Future Improvements
 
 - Machine Learning based fraud detection
-- MongoDB/PostgreSQL integration
+- Database integration (MongoDB/PostgreSQL)
 - JWT Authentication
 - Redis caching
-- Real-time analytics dashboard
-- Email/SMS alerts
+- Real-time analytics
 - Docker deployment
 
 ---
 
-## Hackathon
+## Developed During
 
-Developed during the **Fiserv Hackathon** as a prototype demonstrating real-time UPI transaction risk assessment using a rule-based approach.
+**Fiserv Hackathon**
 
 ---
 
