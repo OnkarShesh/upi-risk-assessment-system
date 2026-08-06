@@ -160,16 +160,15 @@ The system can be tested using scenarios such as:
 
 ### Dashboard
 
-> Add `screenshots/dashboard.png`
+![Dashboard](screenshots/dashboard.png)
 
 ### User Risk Profile
 
-> Add `screenshots/user-risk-profile.png`
+![User Risk Profile](screenshots/user-risk-profile.png)
 
 ### CSV Export
 
-> Add `screenshots/csv-export.png`
-
+![CSV Export](screenshots/csv-export.png)
 ---
 
 ## Future Improvements
