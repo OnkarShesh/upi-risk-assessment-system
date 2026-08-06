@@ -1,78 +1,192 @@
-UPI Fraud Detection System
+# UPI Risk Assessment System
 
-This is a small project I made to detect fraud in UPI transactions.
-It uses simple rule-based logic to check if a transaction looks suspicious or not.
+A rule-based UPI transaction risk assessment system that analyzes transactions in real time and assigns a risk score based on suspicious activity patterns. Developed during the **Fiserv Hackathon** using **Node.js** and **Express.js**.
 
-I built it using Node.js and Express, and a basic HTML page for frontend.
-There is no database — everything runs in memory.
+---
 
-Folder Structure
-upi-fraud-detector/
-├── server.js          (main backend file)
-├── ruleEngine.js      (fraud rules logic)
+## Overview
+
+The system evaluates every UPI transaction against predefined fraud detection rules and classifies it as **Low**, **Medium**, or **High Risk**. It demonstrates how financial institutions can perform instant transaction risk analysis before processing payments.
+
+---
+
+## Features
+
+- Real-time transaction risk assessment
+- Rule-based fraud detection engine
+- Dynamic risk score calculation
+- Low / Medium / High risk classification
+- New beneficiary detection
+- Device change detection
+- High-value transaction detection
+- Night-time transaction monitoring
+- High transaction velocity detection
+- User transaction profiling
+- Transaction history dashboard
+- CSV export for suspicious transactions
+
+---
+
+## Tech Stack
+
+**Frontend**
+- HTML
+- CSS
+- JavaScript
+
+**Backend**
+- Node.js
+- Express.js
+
+---
+
+## Project Structure
+
+```
+upi-risk-assessment-system
+│
+├── public/
+│   └── index.html
+│
+├── server.js
+├── ruleEngine.js
 ├── package.json
-├── README.md
-└── public/
-    └── index.html     (simple UI)
-How to Run
+├── package-lock.json
+└── README.md
+```
 
-Make sure Node.js is installed.
+---
 
-Then run:
+## Fraud Detection Rules
 
-cd upi-fraud-detector
+The risk engine evaluates transactions using multiple rules including:
+
+- High-value transactions
+- Multiple transactions within a short time
+- New beneficiary detection
+- Device change detection
+- Unusual transaction timing (12 AM – 5 AM)
+- Large transaction amount
+
+Each triggered rule contributes to the overall risk score.
+
+---
+
+## Risk Levels
+
+| Score | Risk Level |
+|-------:|------------|
+| 0 – 29 | Low |
+| 30 – 59 | Medium |
+| 60 – 100 | High |
+
+---
+
+## System Workflow
+
+```
+User Transaction
+        │
+        ▼
+Express Server
+        │
+        ▼
+Rule Engine
+        │
+        ▼
+Risk Score Calculation
+        │
+        ▼
+Low / Medium / High
+        │
+        ▼
+Dashboard & Transaction History
+```
+
+---
+
+## API Endpoints
+
+### Analyze Transaction
+
+```
+POST /api/transaction
+```
+
+### Get User Profile
+
+```
+GET /api/profile/:userId
+```
+
+### Generate Sample Transactions
+
+```
+POST /api/burst
+```
+
+### Export Suspicious Transactions
+
+```
+GET /api/export
+```
+
+---
+
+## Installation
+
+Clone the repository
+
+```bash
+git clone https://github.com/OnkarShesh/upi-risk-assessment-system.git
+```
+
+Go to the project directory
+
+```bash
+cd upi-risk-assessment-system
+```
+
+Install dependencies
+
+```bash
 npm install
+```
+
+Start the server
+
+```bash
 npm start
+```
 
-Open browser:
+Open
+
+```
 http://localhost:3000
+```
 
-APIs
-POST /api/transaction → add transaction
-GET /api/transactions → get all
-GET /api/transactions?filter=flagged → only suspicious
-GET /api/profile/:userId → user data
-POST /api/burst → test multiple transactions
-GET /api/export → download CSV
+---
 
-Example:
+## Future Improvements
 
-{
-  "payer_id": "user_001",
-  "payee_id": "merchant_42",
-  "amount": 15000,
-  "location": "Mumbai",
-  "device_id": "dev_abc123",
-  "hour_override": 3
-}
-How Fraud Detection Works
+- Machine Learning based fraud detection
+- MongoDB/PostgreSQL integration
+- JWT Authentication
+- Redis caching
+- Real-time analytics dashboard
+- Email/SMS alerts
+- Docker deployment
 
-There are some basic rules like:
+---
 
-high amount transactions in short time
-new merchant with high amount
-too many transactions quickly
-transactions at odd hours
-new device + new payee
+## Hackathon
 
-Each rule adds some score.
-Based on total score:
+Developed during the **Fiserv Hackathon** as a prototype demonstrating real-time UPI transaction risk assessment using a rule-based approach.
 
-Low → 0–29
-Medium → 30–59
-High → 60–100
-Testing
+---
 
-You can try:
+## Author
 
-set time to 2 AM
-use new payee + high amount
-change device id
-use burst option
-send 2 big transactions quickly
-Features
-simple rule-based fraud detection
-shows risk level
-user profile with recent transactions
-export suspicious transactions
-no database used
+**Onkar Shesh**
+
+GitHub: https://github.com/OnkarShesh
